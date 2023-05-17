@@ -1,0 +1,29 @@
+
+spring:
+  application:
+    name: comment-service
+  datasource:
+    url: jdbc:h2:file:./comment_db
+    username: sa
+    password: sa
+    driver-class-name: org.h2.Driver
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8671/eureka
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+
+# https://amithkumarg.medium.com/distributed-tracing-with-spring-boot-micrometer-opentelemetry-and-jaeger-fafd5c0bd282
+logging:
+  pattern:
+    level: '%5p [${spring.application.name:},%X{traceId:-},%X{spanId:-}]'
