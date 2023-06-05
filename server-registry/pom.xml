@@ -36,6 +36,8 @@
             <groupId>com.netflix.eureka</groupId>
             <artifactId>eureka-client</artifactId>
         </dependency>
+
+
     </dependencies>
     <dependencyManagement>
         <dependencies>

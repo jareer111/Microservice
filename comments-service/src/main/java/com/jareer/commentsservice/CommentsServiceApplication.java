@@ -1,0 +1,91 @@
+package com.jareer.commentsservice;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import lombok.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.lang.NonNull;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@EnableDiscoveryClient
+@EnableFeignClients
+@EnableCaching
+@SpringBootApplication
+public class CommentsServiceApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(CommentsServiceApplication.class, args);
+    }
+}
+
+
+@RestController
+@RequestMapping("/api/comments")
+@RequiredArgsConstructor
+@Slf4j
+class CommentController {
+
+    private final CommentRepository commentRepository;
+
+    @PostMapping
+    public Comment create(@RequestBody CommentCreateDTO dto) {
+        Comment comment = Comment.builder()
+                .message(dto.message())
+                .postId(dto.postId())
+                .build();
+        return commentRepository.save(comment);
+    }
+
+
+    @GetMapping("/{postId}/post")
+    public List<Comment> getAllByPostID(@PathVariable Integer postId) throws InterruptedException {
+        log.info("Getting all comments by post id: {}", postId);
+        /*if (false)
+            throw new RuntimeException("Error From ELSHOD");
+        *//*TimeUnit.SECONDS.sleep(2);*/
+        return commentRepository.findAllByPostID(postId);
+    }
+
+    @GetMapping("/{id}")
+    public Comment get(@PathVariable Integer id) {
+        return commentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Comment not found: " + id));
+    }
+}
+
+interface CommentRepository extends JpaRepository<Comment, Integer> {
+    @Query("select t from Comment t where t.postId = :postId")
+    List<Comment> findAllByPostID(@NonNull @Param("postId") Integer id);
+}
+
+@Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+class Comment {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(nullable = false)
+    private String message;
+
+    @Column(nullable = false)
+    private Integer postId;
+}
+
+record CommentCreateDTO(@NotBlank String message, @Positive Integer postId) {
+}

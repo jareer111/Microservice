@@ -7,9 +7,10 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/jlkesh/bootcamp22_ms_1_config.git
+          uri: https://github.com/jareer111/Microservice.git
           clone-on-start: true
           default-label: main
+
 eureka:
   client:
     service-url:
